@@ -250,3 +250,7 @@ paket-files/
 # JetBrains Rider
 .idea/
 *.sln.iml
+
+infra/.terraform
+infra/.terraform.lock.hcl
+infra/terraform.tfstate*
