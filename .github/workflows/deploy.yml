@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy ASP app to Azure Web App - kuberno-example-app-ciiwfdggi6hp1ci4
+name: Build and deploy ASP app to Azure Web App - kuberno-example-app
 
 on:
   push:
