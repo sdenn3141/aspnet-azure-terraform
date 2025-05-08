@@ -11,7 +11,6 @@ terraform {
   }
   backend "azurerm" {
     resource_group_name = "test"
-    storage_account_name = var.state_storage_account
     container_name = "tfstate"
     key = "kuberno.tfstate"
   }
