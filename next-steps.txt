@@ -1,4 +1,17 @@
+Better Security
+
 1. Use User Managed Identity for SQL connection between Web app.
 2. Get rid of hardcoded SQL server credentials and use Entra Admin instead.
-3. Upgrade web app to premium plan (P0v3) and integrate with a VNet.
-4. Disable SQL public network and create private endpoint for SQL server. 
+3. Upgrade web app to premium plan (P0v3) and integrate with a VNet. Create private endpoint for SQL server and disable SQL public network access. 
+
+Higher Availability
+
+1. Deploy MSSQL to multiple regions with a read replica.
+2. Deploy web app to multiple regions and point at respective regional read replica.
+3. Use a better sku of database (increases CPU) and also increases backup retention to over 30 days instead of 7.
+
+Pipeline:
+
+1. Add a deployment slot to the web app. Run e2e tests on the web app before swapping. Also include unit + integration tests within the pipeline.
+2. Add gates before allowing deploying of terraform
+3. Only run terraform when terraform files change and only run build/deploy when .cs files change.
