@@ -20,7 +20,7 @@ resource "azurerm_application_insights_standard_web_test" "example" {
   location                = azurerm_resource_group.example.location
   application_insights_id = azurerm_application_insights.example.id
   geo_locations           = ["emea-ru-msa-edge", "emea-se-sto-edge", "emea-nl-ams-azr", "emea-gb-db3-azr", "emea-fr-pra-edge"]
-  enabled = true
+  enabled                 = true
   request {
     url = "http://${azurerm_windows_web_app.example.default_hostname}/"
   }
@@ -82,8 +82,8 @@ resource "azurerm_monitor_metric_alert" "availability_alert" {
 
   application_insights_web_test_location_availability_criteria {
     failed_location_count = 3
-    component_id = azurerm_application_insights.example.id
-    web_test_id = azurerm_application_insights_standard_web_test.example.id
+    component_id          = azurerm_application_insights.example.id
+    web_test_id           = azurerm_application_insights_standard_web_test.example.id
 
   }
 
