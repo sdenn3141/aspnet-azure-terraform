@@ -75,7 +75,7 @@ resource "azurerm_monitor_metric_alert" "memory_alert" {
   }
 }
 
-resource "azurerm_monitor_metric_alert" "memory_alert" {
+resource "azurerm_monitor_metric_alert" "availability_alert" {
   name                = "availability-${azureazurerm_windows_web_app.example.name}"
   resource_group_name = azurerm_resource_group.example.name
   scopes              = [azurerm_application_insights.example.id, azurerm_application_insights_standard_web_test.example.id]

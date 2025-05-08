@@ -1,0 +1,4 @@
+1. Use User Managed Identity for SQL connection between Web app.
+2. Get rid of hardcoded SQL server credentials and use Entra Admin instead.
+3. Upgrade web app to premium plan (P0v3) and integrate with a VNet.
+4. Disable SQL public network and create private endpoint for SQL server. 
