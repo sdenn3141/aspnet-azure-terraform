@@ -42,7 +42,7 @@ jobs:
         working-directory: infra
 
       - name: Terraform Plan
-        run: terraform plan -var "subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" -out=tfplan
+        run: terraform plan -var "subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" -var "state_storage_account=${{ secrets.STATE_STORAGE_ACCOUNT }}" -out=tfplan
         working-directory: infra
 
       - name: Terraform Apply

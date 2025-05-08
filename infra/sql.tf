@@ -45,5 +45,5 @@ resource "azurerm_mssql_database" "example" {
   storage_account_type           = "Geo"
   maintenance_configuration_name = "SQL_Default"
 
-  zone_redundant = true
+  # zone_redundant = true
 }
