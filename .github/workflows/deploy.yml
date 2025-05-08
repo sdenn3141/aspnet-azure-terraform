@@ -1,6 +1,3 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
 name: Build and deploy ASP app to Azure Web App - kuberno-example-app
 
 on:
@@ -10,6 +7,44 @@ on:
   workflow_dispatch:
 
 jobs:
+  terraform:
+    name: Terraform Azure Deploy
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.11.4
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Format Check
+        run: terraform fmt -check
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'
+        run: terraform apply -auto-approve tfplan
+
   build:
     runs-on: windows-latest
     permissions:
@@ -28,31 +63,37 @@ jobs:
         run: nuget restore
 
       - name: Publish to folder
-        run: msbuild /nologo /verbosity:m /t:Build /t:pipelinePreDeployCopyAllFilesToOneFolder /p:_PackageTempDir="\published\"
+        run: msbuild /nologo /verbosity:m /t:Build /t:pipelinePreDeployCopyAllFilesToOneFolder /p:_PackageTempDir="published"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: ASP-app
-          path: "/published/**"
+          path: published/**
 
   deploy:
     runs-on: windows-latest
     needs: build
+    permissions:
+      id-token: write
+      contents: read
 
     steps:
+      - name: Azure Login (OIDC)
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: ASP-app
           path: ./publish-folder
 
-      - name: Zip site contents
-        run: Compress-Archive -Path "./publish-folder/*" -DestinationPath "publish.zip"
-
-      - name: Deploy to Azure using Zip Deploy
-        run: |
-          curl -X POST "https://${{ secrets.WEB_APP_NAME }}.scm.azurewebsites.net/api/zipdeploy" `
-            --user ${{ secrets.KUDU_USERNAME }}:${{ secrets.KUDU_PASSWORD }} `
-            --header "Content-Type: application/zip" `
-            --data-binary "@publish.zip"
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.WEB_APP_NAME }}
+          package: ./publish-folder

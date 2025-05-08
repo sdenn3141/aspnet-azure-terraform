@@ -42,14 +42,8 @@ resource "azurerm_mssql_database" "example" {
   max_size_gb = 1
   sku_name    = "Basic"
 
-  read_scale                     = false
-  storage_account_type           = "Local"
-  read_replica_count             = 0
-  min_capacity                   = 0
+  storage_account_type           = "Geo"
   maintenance_configuration_name = "SQL_Default"
-  ledger_enabled                 = false
 
-  zone_redundant = false
-
-
+  zone_redundant = true
 }
