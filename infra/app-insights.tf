@@ -14,6 +14,18 @@ resource "azurerm_log_analytics_workspace" "example" {
   retention_in_days   = 30
 }
 
+resource "azurerm_application_insights_standard_web_test" "example" {
+  name                    = "example-test"
+  resource_group_name     = azurerm_resource_group.example.name
+  location                = "West Europe"
+  application_insights_id = azurerm_application_insights.example.id
+  geo_locations           = ["emea-ru-msa-edge", "emea-se-sto-edge", "emea-nl-ams-azr", "emea-gb-db3-azr", "emea-fr-pra-edge"]
+
+  request {
+    url = "http://${azurerm_windows_web_app.example.default_hostname}/"
+  }
+}
+
 resource "azurerm_monitor_action_group" "example" {
   name                = "example-actiongroup"
   resource_group_name = azurerm_resource_group.example.name
@@ -56,6 +68,25 @@ resource "azurerm_monitor_metric_alert" "memory_alert" {
     aggregation      = "Average"
     operator         = "GreaterThan"
     threshold        = 50
+  }
+
+  action {
+    action_group_id = azurerm_monitor_action_group.main.id
+  }
+}
+
+resource "azurerm_monitor_metric_alert" "memory_alert" {
+  name                = "availability-${azureazurerm_windows_web_app.example.name}"
+  resource_group_name = azurerm_resource_group.example.name
+  scopes              = [azurerm_application_insights.example.id, azurerm_application_insights_standard_web_test.example.id]
+  description         = "Action will be triggered when availability checks fail 3 times."
+
+
+  application_insights_web_test_location_availability_criteria {
+    failed_location_count = 3
+    component_id = azurerm_application_insights.example.id
+    web_test_id = azurerm_application_insights_standard_web_test.example.id
+
   }
 
   action {
