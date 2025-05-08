@@ -61,6 +61,7 @@ jobs:
           path: infra/tf_outputs.json
 
   build:
+    name: Build ASP.NET application
     runs-on: windows-latest
     permissions:
       contents: read
@@ -87,6 +88,7 @@ jobs:
           path: "/published/**"
 
   deploy:
+    name: Deploy to Azure Web App
     runs-on: windows-latest
     needs:
       - build
