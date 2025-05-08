@@ -31,19 +31,34 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
+        working-directory: infra
 
       - name: Terraform Format Check
         run: terraform fmt -check
+        working-directory: infra
 
       - name: Terraform Validate
         run: terraform validate
+        working-directory: infra
 
       - name: Terraform Plan
         run: terraform plan -out=tfplan
+        working-directory: infra
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main'
         run: terraform apply -auto-approve tfplan
+        working-directory: infra
+
+      - name: Export Terraform Output
+        run: terraform output -json > tf_outputs.json
+        working-directory: infra
+
+      - name: Upload Terraform Output Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tf-outputs
+          path: infra/tf_outputs.json
 
   build:
     runs-on: windows-latest
@@ -63,22 +78,36 @@ jobs:
         run: nuget restore
 
       - name: Publish to folder
-        run: msbuild /nologo /verbosity:m /t:Build /t:pipelinePreDeployCopyAllFilesToOneFolder /p:_PackageTempDir="published"
+        run: msbuild /nologo /verbosity:m /t:Build /t:pipelinePreDeployCopyAllFilesToOneFolder /p:_PackageTempDir="\published\"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: ASP-app
-          path: published/**
+          path: "/published/**"
 
   deploy:
     runs-on: windows-latest
-    needs: build
+    needs:
+      - build
+      - terraform
     permissions:
       id-token: write
       contents: read
 
     steps:
+      - name: Download Terraform Output Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: tf-outputs
+          path: ./infra-output
+
+      - name: Read random_suffix from output
+        id: tf
+        run: |
+          $output = Get-Content ./infra-output/tf_outputs.json | ConvertFrom-Json
+          echo "web_app_name=$($output.web_app_name.value)" >> $env:GITHUB_ENV
+        shell: pwsh
       - name: Azure Login (OIDC)
         uses: azure/login@v1
         with:
@@ -95,5 +124,5 @@ jobs:
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: ${{ secrets.WEB_APP_NAME }}
+          app-name: ${{ env.web_app_name }}
           package: ./publish-folder

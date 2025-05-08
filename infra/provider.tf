@@ -8,10 +8,6 @@ terraform {
       source  = "hashicorp/random"
       version = "~> 3.7.2"
     }
-    github = {
-      source  = "integrations/github"
-      version = "~> 6.0"
-    }
   }
 }
 
@@ -20,5 +16,3 @@ provider "azurerm" {
   subscription_id                 = var.subscription_id
   features {}
 }
-
-provider "github" {}
